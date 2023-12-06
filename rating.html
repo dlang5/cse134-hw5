@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --empty-star-color: gray;
+      --star-color: blue;
+    }
+
+    .star {
+      font-size: 2em;
+      color: var(--empty-star-color);
+      cursor: pointer;
+    }
+
+    .star:hover {
+      color: var(--star-color);
+    }
+
+    #rating-input {
+      display: none;
+    }
+
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    #rating-form {
+      display: none;
+    }
+
+    #star-form {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+<rating-widget>
+  <noscript>
+    <style>
+      #rating-form {
+        display: block;
+      }
+      #star-form {
+        display: none;
+      }
+      #color-palette {
+        display: none;
+      }
+    </style>
+  </noscript>
+  <form action="https://httpbin.org/post" method="POST" id="star-form">
+    <label for="rating">How satisfied are you?</label>
+    <div>
+      <span class="star" data-rating="1">★</span>
+      <span class="star" data-rating="2">★</span>
+      <span class="star" data-rating="3">★</span>
+      <span class="star" data-rating="4">★</span>
+      <span class="star" data-rating="5">★</span>
+    </div>
+    <input type="hidden" id="rating-input" name="rating" value="0" required>
+  </form>
+
+  <form action="https://httpbin.org/post" method="POST" id="rating-form">
+    <label for="rating">How satisfied are you?</label>
+    <input type="hidden" name="question" value="How satisfied are you?">
+    <input type="hidden" name="sentBy" value="HTML">
+    <input type="number" id="rating" name="rating" min="1" max="5" value="0" required>
+    <button type="submit">Submit</button>
+  </form>
+</rating-widget>
+
+<p id="color-palette">
+  <label for="star-color-picker" class="color-picker">Empty Color:&nbsp;</label>
+  <input type="color" id="star-color-picker" onchange="changeStarColor()" value="#808080">
+  <br>
+  <label for="star-hover-color-picker" class="color-picker">Star Color:&nbsp;</label>
+  <input type="color" id="star-hover-color-picker" onchange="changeHoverColor()" value="#0000FF">
+</p>
+
+<p id="message"></p>
+
+<script>
+  const stars = document.querySelectorAll('.star');
+  const ratingInput = document.getElementById('rating-input');
+  const messageContainer = document.getElementById('message');
+  const starColorPicker = document.getElementById('star-color-picker');
+  const hoverColorPicker = document.getElementById('star-hover-color-picker');
+
+  function changeStarColor() {
+    document.documentElement.style.setProperty('--empty-star-color', starColorPicker.value);
+  }
+
+  function changeHoverColor() {
+    document.documentElement.style.setProperty('--star-color', hoverColorPicker.value);
+  }
+
+  stars.forEach(star => {
+    star.addEventListener('mouseover', () => {
+      const rating = parseInt(star.getAttribute('data-rating'));
+      stars.forEach(s => {
+        if (parseInt(s.getAttribute('data-rating')) <= rating) {
+          s.style.color = 'var(--star-color)';
+        } else {
+          s.style.color = 'var(--empty-star-color)';
+        }
+      });
+    });
+
+    star.addEventListener('mouseout', () => {
+      const selectedRating = parseInt(ratingInput.value);
+      stars.forEach(s => {
+        if (parseInt(s.getAttribute('data-rating')) <= selectedRating) {
+          s.style.color = 'var(--star-color)';
+        } else {
+          s.style.color = 'var(--empty-star-color)';
+        }
+      });
+    });
+
+    star.addEventListener('click', () => {
+      const rating = parseInt(star.getAttribute('data-rating'));
+      ratingInput.value = rating;
+      console.log(`Rating: ${rating}`);
+
+      let message = `Thanks for the ${rating} star rating.`;
+      if (rating >= 4) {
+        message += ' We appreciate it!';
+      }
+      if (rating <= 2) {
+        message += ' We\'ll try better.';
+      }
+
+      messageContainer.textContent = message;
+    });
+  });
+</script>
+
+</body>
+</html>

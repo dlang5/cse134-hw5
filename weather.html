@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Montserrat:wght@500&family=Roboto+Slab&display=swap');
+
+h1 {
+  font-size: 0.9em;
+  margin-bottom: 0.3em; 
+  text-align: center; 
+  font-weight: 900;
+}
+
+h2 {
+  font-size: 2.5em;
+  margin-bottom: 0em;
+  margin-top: 0em;
+  color: #000080; 
+  text-decoration-color: #000080;
+}
+
+#container {
+  display: flex;
+  width: 15em;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: lightgray;
+  border-radius: 10px;
+  border: 2px solid #000080;
+  font-family: 'Montserrat', sans-serif;
+  color: #121010;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+#pic {
+  width: 80%;
+  max-width: 6em;
+  height: auto;
+}
+
+h3 {
+  margin-top: 0em;
+  margin-bottom: .2em;
+  text-align: center;
+}
+
+h4 {
+  font-size: 0.7em;
+  margin-top: 0em;
+  margin-bottom: 1em;
+  align-items: center;
+  justify-content: center;
+}
+
+    </style>
+    <title>UCSD Weather</title>
+</head>
+<body>
+    
+    <div id="container">
+      <h1>UC San Diego<br> Current Weather</h1>
+      <h2 id="weather-info"></h2>
+      <h3 id="pic"></h3>
+      <h4 id="description"></h4>
+      <h4 id="wind"></h4>
+      <h4 id="humidity"></h4>
+      <h4 id="dewpoint"></h4>
+      <noscript>
+        <h4>Current Weather Conditions Unavailable.</h4>
+      </noscript>
+      
+    </div>
+
+    <script>
+        const apiUrl = "https://api.weather.gov/points/32.8801,-117.2340";
+
+        const weatherIcons = [
+  // Yellow circle
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="yellow"><circle cx="12" cy="12" r="10"/></svg>',
+
+  // Light blue circle
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="lightBlue"><circle cx="12" cy="12" r="10"/></svg>',
+
+  '<object type="image/svg+xml" data="cloud.svg" width="100%" height="100%"></object>',
+
+  '<object type="image/svg+xml" data="rain.svg" width="100%" height="100%"></object>',
+
+  '<object type="image/svg+xml" data="UCSD.svg" width="100%" height="100%"></object>'
+];
+
+        async function getWeatherData() {
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                const forecastUrl = data.properties.forecast;
+
+                const forecastResponse = await fetch(forecastUrl);
+                const forecastData = await forecastResponse.json();
+
+                const period1 = forecastData.properties.periods.find(period => period.number === 1);
+
+                if (period1) {
+                    const temperature = period1.temperature;
+                    const temperatureUnit = period1.temperatureUnit;
+                    const description = period1.shortForecast;
+                    const icon = period1.icon;
+                    const windDirection = period1.windDirection;
+                    const windSpeed = period1.windSpeed;
+                    const humidity = period1.relativeHumidity.value;
+                    var dewPoint = period1.dewpoint.value.toFixed(2);
+
+                    document.getElementById("weather-info").textContent = `${temperature}° ${temperatureUnit}`;
+                    document.getElementById("description").textContent = `${description}`;
+                    document.getElementById("wind").textContent = `Wind Speed: ${windSpeed}° ${windDirection}`;
+                    document.getElementById("humidity").textContent = `Humidity: ${humidity}%`;
+                    document.getElementById("dewpoint").textContent = `Dew Point: ${dewPoint}° C`;
+
+                    const weatherIconContainer = document.getElementById("pic");
+                    const description2 = description.toLowerCase();
+
+                    switch (true) {
+                      case description2.includes("sunny"):
+                        weatherIconContainer.innerHTML = weatherIcons[0];
+                        break;
+                      case description2.includes("clear"):
+                        weatherIconContainer.innerHTML = weatherIcons[1];
+                        break;
+                      case description2.includes("cloudy"):
+                        weatherIconContainer.innerHTML = weatherIcons[2];
+                        break;
+                      case description2.includes("rain"):
+                        weatherIconContainer.innerHTML = weatherIcons[3];
+                        break;
+                      default:
+                        weatherIconContainer.innerHTML = weatherIcons[4];
+                        break;
+                    }
+
+                } else {
+                    console.error("Period 1 not found in the forecast data.");
+                }
+            } catch (error) {
+                console.error("Error fetching weather data:", error);
+            }
+        }
+
+        window.onload = getWeatherData;
+    </script>
+</body>
+</html>
