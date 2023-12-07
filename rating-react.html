@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Rating Widget</title>
+  <style>
+    /* Add your styles here, or link to an external stylesheet */
+    :root {
+      --empty-star-color: gray;
+      --star-color: blue;
+    }
+
+    .star {
+      font-size: 2em;
+      color: var(--empty-star-color);
+      cursor: pointer;
+    }
+
+    .star:hover {
+      color: var(--star-color);
+    }
+
+    #message {
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .color-picker {
+      display: inline-block;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+
+<script type="text/babel">
+  // React code
+  const { useState } = React;
+
+  const RatingWidget = () => {
+    const [rating, setRating] = useState(0);
+    const [message, setMessage] = useState('');
+    const [emptyStarColor, setEmptyStarColor] = useState('#808080');
+    const [starColor, setStarColor] = useState('#0000FF');
+
+    const handleStarHover = (hoveredRating) => {
+      const newStars = Array.from({ length: 5 }, (_, index) => index + 1 <= hoveredRating);
+      setStars(newStars);
+    };
+
+    const handleStarClick = (clickedRating) => {
+      setRating(clickedRating);
+
+      let newMessage = `Thanks for the ${clickedRating} star rating.`;
+      if (clickedRating >= 4) {
+        newMessage += ' We appreciate it!';
+      }
+      if (clickedRating <= 2) {
+        newMessage += ' We\'ll try better.';
+      }
+
+      setMessage(newMessage);
+    };
+
+    const setStars = (newStars) => {
+      const updatedStars = newStars.map((filled) =>
+        filled ? { content: '★', color: starColor } : { content: '★', color: emptyStarColor }
+      );
+      setStarsState(updatedStars);
+    };
+
+    const handleColorChange = (event) => {
+      const colorType = event.target.id === 'star-color-picker' ? 'empty' : 'star';
+      const colorValue = event.target.value;
+
+      if (colorType === 'empty') {
+        setEmptyStarColor(colorValue);
+      } else {
+        setStarColor(colorValue);
+      }
+    };
+
+    const starsArray = Array.from({ length: 5 }, (_, index) => index + 1);
+    const [stars, setStarsState] = useState(starsArray.map(() => ({ content: '★', color: emptyStarColor })));
+
+    return (
+      <div>
+        <p>
+          <label htmlFor="star-color-picker" className="color-picker">
+            Empty Color:&nbsp;
+          </label>
+          <input
+            type="color"
+            id="star-color-picker"
+            onChange={handleColorChange}
+            value={emptyStarColor}
+          />
+          <br />
+          <label htmlFor="star-hover-color-picker" className="color-picker">
+            Star Color:&nbsp;
+          </label>
+          <input
+            type="color"
+            id="star-hover-color-picker"
+            onChange={handleColorChange}
+            value={starColor}
+          />
+        </p>
+
+        <div>
+          {stars.map((star, index) => (
+            <span
+              key={index + 1}
+              className="star"
+              onMouseOver={() => handleStarHover(index + 1)}
+              onClick={() => handleStarClick(index + 1)}
+              style={{ fontSize: '2em', color: star.color, cursor: 'pointer' }}
+            >
+              {star.content}
+            </span>
+          ))}
+        </div>
+
+        <p id="message">{message}</p>
+      </div>
+    );
+  };
+
+  ReactDOM.render(<RatingWidget />, document.getElementById('root'));
+</script>
+
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Weather</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato:wght@700&family=Montserrat:wght@500&family=Roboto+Slab&display=swap');
+
+h1 {
+  font-size: 0.9em;
+  margin-bottom: 0.3em; 
+  text-align: center; 
+  font-weight: 900;
+}
+
+h2 {
+  font-size: 2.5em;
+  margin-bottom: 0em;
+  margin-top: 0em;
+  color: #000080; 
+  text-decoration-color: #000080;
+}
+
+#container {
+  display: flex;
+  width: 15em;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: lightgray;
+  border-radius: 10px;
+  border: 2px solid #000080;
+  font-family: 'Montserrat', sans-serif;
+  color: #121010;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+#pic {
+  width: 80%;
+  max-width: 6em;
+  height: auto;
+}
+
+h3 {
+  margin-top: 0em;
+  margin-bottom: .2em;
+  text-align: center;
+}
+
+h4 {
+  font-size: 0.7em;
+  margin-top: 0em;
+  margin-bottom: 1em;
+  align-items: center;
+  justify-content: center;
+}
+
+  </style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+  // React code
+  const { useState, useEffect } = React;
+
+  const WeatherComponent = () => {
+    const [weatherInfo, setWeatherInfo] = useState('');
+    const [weatherIcon, setWeatherIcon] = useState('');
+    const [description, setDescription] = useState('');
+    const [wind, setWind] = useState('');
+    const [humidity, setHumidity] = useState('');
+    const [dewpoint, setDewpoint] = useState('');
+
+    const apiUrl = "https://api.weather.gov/points/32.8801,-117.2340";
+    const weatherIcons = [
+  // Yellow circle
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="yellow"><circle cx="12" cy="12" r="10"/></svg>',
+
+  // Light blue circle
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="lightBlue"><circle cx="12" cy="12" r="10"/></svg>',
+
+  '<object type="image/svg+xml" data="cloud.svg" width="100%" height="100%"></object>',
+
+  '<object type="image/svg+xml" data="rain.svg" width="100%" height="100%"></object>',
+
+  '<object type="image/svg+xml" data="UCSD.svg" width="100%" height="100%"></object>'
+];
+
+    useEffect(() => {
+      const getWeatherData = async () => {
+        try {
+          const response = await fetch(apiUrl);
+          const data = await response.json();
+          const forecastUrl = data.properties.forecast;
+          const forecastResponse = await fetch(forecastUrl);
+          const forecastData = await forecastResponse.json();
+          const period1 = forecastData.properties.periods.find(period => period.number === 1);
+
+          if (period1) {
+            setWeatherInfo(`${period1.temperature}° ${period1.temperatureUnit}`);
+            setDescription(period1.shortForecast);
+            setWind(`Wind Speed: ${period1.windSpeed}° ${period1.windDirection}`);
+            setHumidity(`Humidity: ${period1.relativeHumidity.value}%`);
+            setDewpoint(`Dew Point: ${period1.dewpoint.value.toFixed(2)}° C`);
+
+            const weatherIconContainer = weatherIcons.find(icon => description.toLowerCase().includes(icon));
+            setWeatherIcon(weatherIconContainer || '');
+          } else {
+            console.error("Period 1 not found in the forecast data.");
+          }
+        } catch (error) {
+          console.error("Error fetching weather data:", error);
+        }
+      };
+
+      getWeatherData();
+    }, []);
+
+    return (
+      <div id="container">
+        <h1>UC San Diego Current Weather</h1>
+        <h2>{weatherInfo}</h2>
+        <h3 id="pic" dangerouslySetInnerHTML={{ __html: weatherIcon }}></h3>
+        <h4>{description}</h4>
+        <h4>{wind}</h4>
+        <h4>{humidity}</h4>
+        <h4>{dewpoint}</h4>
+        <noscript>
+          <h4>Current Weather Conditions Unavailable.</h4>
+        </noscript>
+      </div>
+    );
+  };
+
+  ReactDOM.render(<WeatherComponent />, document.getElementById('root'));
+</script>
+
+</body>
+</html>
